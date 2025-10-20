@@ -1,0 +1,21 @@
+{
+  "name": "@repo/shared-redis",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc -b && cd ../.. && npm i"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@types/redis": "^4.0.10",
+    "redis": "^5.8.3"
+  }
+}
