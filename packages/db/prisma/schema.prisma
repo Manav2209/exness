@@ -22,3 +22,14 @@ model User {
   updatedAt DateTime @updatedAt
 
 }
+
+model Asset {
+  id        String   @id @default(cuid())
+  name      String
+  symbol    String   @unique
+  imgUrl    String?  @default("")
+  decimals Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

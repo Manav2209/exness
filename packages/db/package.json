@@ -8,18 +8,17 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc -b && cd ../.. && npm i",
+    "build": "tsc -b ",
     "db:seed": "prisma db seed"
-
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
   "devDependencies": {
-    "prisma": "^5.12.1"
+    "prisma": "^6.18.0"
   },
   "dependencies": {
-    "@prisma/client": "^5.22.0"
+    "@prisma/client": "^6.18.0"
   }
 }
