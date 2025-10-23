@@ -1,6 +1,7 @@
 import { AuthRequest } from "../middleware.js";
 import { Response } from "express";
 import { redis } from "@repo/shared-redis";
+import { Engine } from "../Engine/index.js";
 
 interface ICreateTradeRequest {
     type: "market" | "limit";
@@ -80,6 +81,7 @@ export const createTrade = async ( req : AuthRequest, res : Response) => {
     };
     
     //send data to trade Engine
+    const orderId = Engine.process(data);
     
     
     return res.status(200).json({ orderId });
@@ -97,6 +99,13 @@ export const getOpenTrade = async ( req : AuthRequest, res : Response) => {
     }
 
     // fetch open trades from trade engine
+    const orderIds = Engine.userOrderMap.get(userId);
+    if (orderIds) {
+        const orders = Array.from(orderIds).map((id) => Engine.OPEN_ORDERS.get(id));
+        return res.status(200).json({ orders } as IGetOpenOrdersResponse);
+    }
+
+    res.status(200).json({ orders: [] } as IGetOpenOrdersResponse);
 
     
 }
@@ -112,6 +121,14 @@ export const getClosedTrade = async ( req : AuthRequest, res : Response) => {
     }
 
     // fetch closed trades from trade engine
+    const ordersIds = await Engine.userOrderMap.get(userId);
+
+    if (ordersIds) {
+        const orders = Array.from(ordersIds).map((id) => {
+            return Engine.CLOSED_ORDERS.get(id);
+        });
+    }
+    res.status(200).json({ orders: [] } as IGetClosedOrdersResponse);
 
     
 }
