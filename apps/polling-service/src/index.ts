@@ -21,7 +21,6 @@ async function main () {
       }
     });
 
-    
 }
 
 async function handleSubscribeMarket (market : string) {
