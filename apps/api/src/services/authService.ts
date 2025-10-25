@@ -3,6 +3,9 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import  { prismaClient } from "@repo/db/client";
 import { redis } from "@repo/shared-redis";
+import dotenv from "dotenv";
+dotenv.config();
+
 
 
 

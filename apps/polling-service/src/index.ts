@@ -1,5 +1,6 @@
 import { BINANCE_WS_URL, POLLING_ENGINE_QUEUE_NAME , POLLING_ENGINE_EVENT_CHANNEL } from "@repo/common";
 import { publisher , subscriber , redis } from "@repo/shared-redis";
+import { restartPolling } from "@repo/shared-redis/pollingStarter";
 
 interface msgType {
   type: "SUBSCRIBE" | "UNSUBSCRIBE";
@@ -21,7 +22,9 @@ async function main () {
       }
     });
 
-}
+    await restartPolling();
+
+
 
 async function handleSubscribeMarket (market : string) {
 
@@ -44,7 +47,7 @@ async function handleSubscribeMarket (market : string) {
 
   webSocket.onmessage =  async (msg) => {
     const tradeData = JSON.parse(msg.data);
-    console.log(`Trade data for ${market}:`, tradeData);
+    
 
     // these data is push for batch update in db
     await publisher.lPush(
@@ -87,6 +90,6 @@ async function handleUnsubscribeMarket (market : string) {
     SUBSCRIBED_MARKETS.delete(market);
   }
 }
-
+}
 
 main();
