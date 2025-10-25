@@ -53,8 +53,18 @@ export const signup = async (req : Request, res : Response) => {
       return res.status(400).json({ error: "Missing username or password" });
     }
   
+    const userExists = await prismaClient.user.findUnique({
+      where: {
+        username: username,
+      },
+    });
+
+    if(userExists){
+      return  res.status(409).json({ error: "Username already taken" });
+    }
+
     const passwordHash = await bcrypt.hash(password, 10);
-  
+    
     const user = await prismaClient.user.create({
       data: {
         email,

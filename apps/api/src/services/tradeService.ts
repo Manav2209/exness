@@ -81,7 +81,7 @@ export const createTrade = async ( req : AuthRequest, res : Response) => {
     };
     
     //send data to trade Engine
-    const orderId = Engine.process(data);
+    const orderId = await Engine.process(data);
     
     
     return res.status(200).json({ orderId });
@@ -99,7 +99,7 @@ export const getOpenTrade = async ( req : AuthRequest, res : Response) => {
     }
 
     // fetch open trades from trade engine
-    const orderIds = Engine.userOrderMap.get(userId);
+    const orderIds = await  Engine.userOrderMap.get(userId);
     if (orderIds) {
         const orders = Array.from(orderIds).map((id) => Engine.OPEN_ORDERS.get(id));
         return res.status(200).json({ orders } as IGetOpenOrdersResponse);

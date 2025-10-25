@@ -80,7 +80,10 @@ export class Engine {
             userId: string;
         }) {
             const user = await this.getUserData(userId);
+            console.log("User before locking:", user);
             const bal = user.balance as Balance;
+
+
 
             if (bal.usd < amountToLock) {
             throw new Error("Insufficient balance");
@@ -417,7 +420,7 @@ export class Engine {
                     .get(market)!
                     .push({ orderId, price: buyPriceScaled });
                 
-                  // settle depending on leverage or spot:
+                // settle depending on leverage or spot:
                 const assets = user.assets || {};
                 const borrowedAssets: Record<string, any> = user.borrowedAssets || {};
                 const balanceAfter = { ...user.balance } as Balance;

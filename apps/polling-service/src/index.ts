@@ -62,6 +62,7 @@ async function handleSubscribeMarket (market : string) {
       market: market,
       time: tradeData.data.E,
     }
+    
     console.log("Publishing to this market", market);
 
     await publisher.publish(
