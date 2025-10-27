@@ -3,6 +3,9 @@ import cors from 'cors';
 import authRouter from './routes/authRoute.js';
 import tradeRouter from './routes/tradeRoute.js';
 import startTradeListening from './tradeListener.js';
+import { assetRouter } from './routes/assetRoute.js';
+import { systemRouter } from './routes/systemRoutes.js';
+import { balanceRouter } from './routes/balanceRoute.js';
 
 
 
@@ -19,6 +22,9 @@ startTradeListening().catch((err) => {
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/trade" , tradeRouter);
+app.use("/api/v1/asset" , assetRouter);
+app.use("/api/v1/system", systemRouter);
+app.use("/api/v1/balance" , balanceRouter);
 
 app.listen(3000, () => {
     console.log('API server is running on http://localhost:3000');
