@@ -6,6 +6,7 @@ import startTradeListening from './tradeListener.js';
 import { assetRouter } from './routes/assetRoute.js';
 import { systemRouter } from './routes/systemRoutes.js';
 import { balanceRouter } from './routes/balanceRoute.js';
+import { candleRouter } from './routes/candleRoute.js';
 
 
 
@@ -25,6 +26,7 @@ app.use("/api/v1/trade" , tradeRouter);
 app.use("/api/v1/asset" , assetRouter);
 app.use("/api/v1/system", systemRouter);
 app.use("/api/v1/balance" , balanceRouter);
+app.use("/api/v1/candles" , candleRouter);
 
 app.listen(3000, () => {
     console.log('API server is running on http://localhost:3000');
