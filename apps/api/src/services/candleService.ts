@@ -1,6 +1,7 @@
 import { pool } from "@repo/timeseries-db";
 import { Request, Response } from "express";
 
+
 const validIntervals = {
     "1m": "candles_1m",
     "5m": "candles_5m",
@@ -10,6 +11,7 @@ const validIntervals = {
 
 export const getCandlesforSymbol = async ( req : Request , res : Response) =>  {
 
+        console.log("Hitting getCandlesforSymbol endpoint with query:", req.query);
         const { symbol, interval, startTime, endTime } = req.query;
 
         if (!symbol || !interval) {
@@ -23,7 +25,7 @@ export const getCandlesforSymbol = async ( req : Request , res : Response) =>  {
         }
     
         const params: any[] = [symbol];
-        // 2. Use the validated tableName in the query
+        // 2. Use parameterized query with $1 placeholder
         let query = `
         SELECT bucket AS time, open, high, low, close, volume
         FROM ${tableName}
@@ -37,16 +39,18 @@ export const getCandlesforSymbol = async ( req : Request , res : Response) =>  {
     
         if (endTime) {
         params.push(new Date(endTime as string));
-        query += `AND bucket <= $${params.length}`;
+        query += ` AND bucket <= $${params.length}`;
         }
     
         query += `
         ORDER BY bucket DESC
         `;
-    
+        
+        console.log("Executing query:", query, "with params:", params);
         pool
         .query(query, params)
         .then((result: any) => {
+            console.log("Fetched candles:", result.rows);
             res.json(result.rows);
         })
         .catch((error: any) => {

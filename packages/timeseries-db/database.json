@@ -1,8 +1,0 @@
-{
-    "dev": {
-      "databaseUrl": "postgres://postgres:postgres@localhost:5433/timeseries_db",
-      "dir": "migrations",
-      "direction": "up"
-    }
-  }
-  

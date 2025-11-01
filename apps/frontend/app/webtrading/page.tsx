@@ -1,70 +1,93 @@
-
+"use client";
+import OrderForm from "@/components/webtrading/OrderForm";
 import { WsManager } from "@/lib/WsManager";
 import { TradingInstrument } from "@/lib/types";
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
+import { Sidebar } from "@/components/webtrading/Sidebar";
 import { useEffect, useState } from "react";
+import TradeView from "@/components/webtrading/tradeView";
+
 
 const Webtrading = () => {
+    const [selectedInstrument, setSelectedInstrument] = useState<TradingInstrument | null>(null);
 
-    const [selectedInstrument, setSelectedInstrument] =  useState<TradingInstrument| null> (null);
     const [assets, setAssets] = useState<TradingInstrument[]>([]);
 
-    // Fix the code 
-    
     async function fetchAssets() {
-
-        const token = localStorage.getItem("token"); 
-        if(!token) {
-            console.error("No token found in localStorage");
-            return;
-        }
-        const res = await axios.get("/api/v1/assets" , {
-            headers:{
-                "Authorization":`Bearer ${token}`
+            try {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                console.error("No token found in localStorage");
+                return;
             }
-        });
-        const data = res.data;
-        setAssets(data.assets);
 
-        setSelectedInstrument(data.assets[0]);
+            const decoded = jwtDecode(token);
+            const userId = (decoded as any)?.userId;
+            if (!userId) {
+                console.error("Invalid token: no userId found");
+                return;
+            }
 
-        const wsInstance = WsManager.getInstance();
+            const res = await axios.get("http://localhost:3000/api/v1/asset", {
+                headers: { Authorization: `Bearer ${token}` },
+            });
 
-        data.assets.forEach((asset: TradingInstrument) => {
-            wsInstance.subscribe(asset.symbol.toLowerCase(), "random-user-id");
-        });
+            const data = res.data;
+            if (!data?.assets || !Array.isArray(data.assets)) {
+                console.error("Invalid assets response");
+                return;
+            }
 
+            console.log("Fetched assets:", data.assets);
+            const cleanAssets = data.assets.filter(
+                (a: any): a is TradingInstrument =>
+                a && typeof a.symbol === "string" && a.symbol.length > 0
+            );
+            setAssets(cleanAssets);
+
+                    // ✅ Set default selected instrument to the first one if not already selected
+            if (cleanAssets.length > 0 && !selectedInstrument) {
+                setSelectedInstrument(cleanAssets[0]);
+            }
+            } catch (err) {
+            console.error("Error fetching assets:", err);
+            }
     }
 
     useEffect(() => {
-
         fetchAssets();
-
     }, []);
 
-
     return (
-    <div className="h-full w-full">
+        <div className="h-full w-full flex flex-col">
+        {/* Navbar */}
+        <div className="border-b p-4 font-semibold">Navbar</div>
 
-    
-        <div className="flex flex-col items-center justify-center">
-            <div>
-                {/* Navbar */}
+        {/* Main Layout */}
+        <div className="flex flex-row ">
+        
+        
+            <Sidebar
+            // @ts-ignore
+            selectedInstrument={selectedInstrument}
+            onSelectInstrument={setSelectedInstrument}
+            assets={assets}/>
+
+            <div className="w-[60%] p-4 border-r">
+                <TradeView
+                //@ts-ignore
+                 market={selectedInstrument?.symbol}/>
             </div>
-            <div className=" flex ">
-                <div>
-                    Sidebar
-                </div>
-                <div>
-                    Trading View
-                </div>
-                <div>
-                    Trading panel
-                </div>
+
+        
+            <div className="w-[20%] p-4">
+            
+            <OrderForm selectedInstrument={selectedInstrument} />
             </div>
         </div>
-    </div>
-    )
-}
+        </div>
+    );
+};
 
 export default Webtrading;
