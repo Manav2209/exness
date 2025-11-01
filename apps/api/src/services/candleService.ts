@@ -46,11 +46,11 @@ export const getCandlesforSymbol = async ( req : Request , res : Response) =>  {
         ORDER BY bucket DESC
         `;
         
-        console.log("Executing query:", query, "with params:", params);
+    
         pool
         .query(query, params)
         .then((result: any) => {
-            console.log("Fetched candles:", result.rows);
+            
             res.json(result.rows);
         })
         .catch((error: any) => {

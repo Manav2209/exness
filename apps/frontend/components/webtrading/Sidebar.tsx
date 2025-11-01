@@ -1,8 +1,21 @@
 "use client";
 import { TradingInstrument } from "@/lib/types";
 import { Search } from "lucide-react";
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Input } from "../ui/input";
+import { WsManager } from "@/lib/WsManager";
+import axios from "axios";
+
+interface WsTradeData{
+    data: {
+        buy: number;
+        market: string;
+        sell: number;
+        time: number;
+    },
+    market: string;
+    type: "TRADE";
+  }
 
 interface SidebarProps {
     selectedInstrument: TradingInstrument ;
@@ -10,7 +23,8 @@ interface SidebarProps {
     assets: TradingInstrument[];
 }
 
-export const Sidebar = ({ selectedInstrument, onSelectInstrument, assets }: SidebarProps) => {
+export const Sidebar = ({ selectedInstrument, onSelectInstrument, assets  }: SidebarProps) => {
+
     return (
     <div className="w-[20%] h-screen bg-[#121212] text-gray-200 border-r border-gray-700 flex flex-col">
         {/* Header */}

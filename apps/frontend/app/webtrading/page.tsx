@@ -7,12 +7,17 @@ import { jwtDecode } from "jwt-decode";
 import { Sidebar } from "@/components/webtrading/Sidebar";
 import { useEffect, useState } from "react";
 import TradeView from "@/components/webtrading/tradeView";
+import { Orders } from "@/components/webtrading/Orders";
 
 
 const Webtrading = () => {
-    const [selectedInstrument, setSelectedInstrument] = useState<TradingInstrument | null>(null);
 
+    const [selectedInstrument, setSelectedInstrument] = useState<TradingInstrument | null>(null);
     const [assets, setAssets] = useState<TradingInstrument[]>([]);
+    useEffect(() => {
+
+        fetchAssets();
+        },[])
 
     async function fetchAssets() {
             try {
@@ -45,10 +50,8 @@ const Webtrading = () => {
                 a && typeof a.symbol === "string" && a.symbol.length > 0
             );
             setAssets(cleanAssets);
-
-                    // ✅ Set default selected instrument to the first one if not already selected
             if (cleanAssets.length > 0 && !selectedInstrument) {
-                setSelectedInstrument(cleanAssets[0]);
+                setSelectedInstrument(cleanAssets[1]);
             }
             } catch (err) {
             console.error("Error fetching assets:", err);
@@ -77,7 +80,12 @@ const Webtrading = () => {
             <div className="w-[60%] p-4 border-r">
                 <TradeView
                 //@ts-ignore
-                 market={selectedInstrument?.symbol}/>
+                    market={selectedInstrument?.symbol}/>
+                <Orders
+                //@ts-ignore
+                selectedInstrument={selectedInstrument}
+                
+                />
             </div>
 
         
