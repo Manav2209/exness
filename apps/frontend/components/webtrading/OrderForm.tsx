@@ -74,7 +74,7 @@ const OrderForm = ({ selectedInstrument }: OrderFormProps) => {
   };
 
   return (
-    <div className="bg-[#141920] border border-[#2a3441] rounded-xl p-6 w-full">
+    <div className="bg-[#141920] rounded-xl p-6 w-full">
       <div className="text-center mb-4">
         <div className="text-gray-400 text-sm font-medium">
           {selectedInstrument?.symbol || "Select Market"}

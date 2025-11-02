@@ -8,6 +8,7 @@ import { Sidebar } from "@/components/webtrading/Sidebar";
 import { useEffect, useState } from "react";
 import TradeView from "@/components/webtrading/tradeView";
 import { Orders } from "@/components/webtrading/Orders";
+import { Header } from "@/components/webtrading/Header";
 
 
 const Webtrading = () => {
@@ -17,6 +18,11 @@ const Webtrading = () => {
     useEffect(() => {
 
         fetchAssets();
+        const wsInstance = WsManager.getInstance();
+            wsInstance.sendMessage({
+                type: "IDENTIFY",
+                userId: "abcd"
+            })
         },[])
 
     async function fetchAssets() {
@@ -58,17 +64,18 @@ const Webtrading = () => {
             }
     }
 
-    useEffect(() => {
-        fetchAssets();
-    }, []);
 
     return (
         <div className="h-full w-full flex flex-col">
-        {/* Navbar */}
-        <div className="border-b p-4 font-semibold">Navbar</div>
+        
+        <div className="p-4 bg-[#141d22] border-b-4 border-neutral-500">
+            <Header 
+         
+            assets={assets} />
+        </div>
 
         {/* Main Layout */}
-        <div className="flex flex-row ">
+        <div className="flex flex-row bg-[#141920] ">
         
         
             <Sidebar
@@ -77,7 +84,7 @@ const Webtrading = () => {
             onSelectInstrument={setSelectedInstrument}
             assets={assets}/>
 
-            <div className="w-[60%] p-4 border-r">
+            <div className="w-[60%] border-l-4  border-neutral-700">
                 <TradeView
                 //@ts-ignore
                     market={selectedInstrument?.symbol}/>
@@ -89,7 +96,7 @@ const Webtrading = () => {
             </div>
 
         
-            <div className="w-[20%] p-4">
+            <div className="w-[20%] border-l-4 border-neutral-700 ml-1">
             
             <OrderForm selectedInstrument={selectedInstrument} />
             </div>

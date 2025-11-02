@@ -46,8 +46,11 @@ import {
           mode: 1, // CrosshairMode.Normal
         },
         layout: {
-          background: { type: ColorType.Solid, color: layout.background },
+          background: { type: ColorType.Solid, color: '#141d22'},
           textColor: layout.color,
+        
+          
+          
         },
       });
   

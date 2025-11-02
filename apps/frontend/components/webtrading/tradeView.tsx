@@ -79,7 +79,7 @@ const TradeView = ({ market }: { market: string }) => {
     },[market,timeFrame])
 
   return (
-    <div className="flex-1 bg-[#0a0e13] border-r border-[#2a3441] relative">
+    <div className="flex-1 bg-[#0a0e13] relative">
       {/* Chart Header */}
         <div className="absolute top-4 left-4 z-10 bg-[#141920]/90 backdrop-blur-sm rounded-lg p-3 border border-[#2a3441]">
             <div className="flex items-center space-x-4">
@@ -93,7 +93,7 @@ const TradeView = ({ market }: { market: string }) => {
         <div>
             <div 
             ref={chartRef} 
-            className="w-full h-full min-h-[500px]"  // Add min-h
+            className="w-full  h-full min-h-[500px]"  // Add min-h
             />
         </div>
         
