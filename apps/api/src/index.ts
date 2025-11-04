@@ -28,8 +28,8 @@ app.use("/api/v1/system", systemRouter);
 app.use("/api/v1/balance" , balanceRouter);
 app.use("/api/v1/candles" , candleRouter);
 
-app.listen(3000, () => {
-    console.log('API server is running on http://localhost:3000');
+app.listen(4000, () => {
+    console.log('API server is running on http://localhost:4000');
 });
 
 

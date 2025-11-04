@@ -32,7 +32,7 @@ const TradeView = ({ market }: { market: string }) => {
             let kLinesData: KLine[] = [];
             console.log("Initializing chart for market:", market, "with timeframe:", timeFrame);
             try {
-                const data = await fetch(`http://localhost:3000/api/v1/candles?symbol=${market}&interval=${timeFrame}`);
+                const data = await fetch(`http://localhost:4000/api/v1/candles?symbol=${market}&interval=${timeFrame}`);
                 console.log("Response data:", data);
                 kLinesData = await data.json();
 

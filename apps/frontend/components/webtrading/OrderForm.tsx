@@ -50,7 +50,7 @@ const OrderForm = ({ selectedInstrument }: OrderFormProps) => {
     console.log("Placing order", data);
 
     try {
-      const res = await fetch("http://localhost:3000/api/v1/trade", {
+      const res = await fetch("http://localhost:4000/api/v1/trade", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

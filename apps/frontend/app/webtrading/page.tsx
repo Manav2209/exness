@@ -40,7 +40,7 @@ const Webtrading = () => {
                 return;
             }
 
-            const res = await axios.get("http://localhost:3000/api/v1/asset", {
+            const res = await axios.get("http://localhost:4000/api/v1/asset", {
                 headers: { Authorization: `Bearer ${token}` },
             });
 

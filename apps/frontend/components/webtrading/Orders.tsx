@@ -16,7 +16,7 @@ export const Orders = ({selectedInstrument}: {
     useEffect(() => {
         const fetchOpenOrders = async () => {
             try {
-                const res = await fetch("http://localhost:3000/api/v1/trade/open", {
+                const res = await fetch("http://localhost:4000/api/v1/trade/open", {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }

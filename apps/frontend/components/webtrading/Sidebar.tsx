@@ -40,7 +40,7 @@ export const Sidebar = ({ selectedInstrument, onSelectInstrument, assets: fetchA
         async function fetchAndSubscribe() {
           try {
             const token = localStorage.getItem("token");
-            const res = await axios.get("http://localhost:3000/api/v1/asset", {
+            const res = await axios.get("http://localhost:4000/api/v1/asset", {
                 headers: { Authorization: `Bearer ${token}` },
             });
             const initialAssets: TradingInstrument[] = res.data.assets;
