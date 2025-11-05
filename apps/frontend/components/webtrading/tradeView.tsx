@@ -63,7 +63,7 @@ const TradeView = ({ market }: { market: string }) => {
                         ],
                         {
                             background: "#0a0e13",
-                            color: "#ffffff",
+                            color: "#e7e5e4",
                         }
                 );
 
@@ -93,7 +93,7 @@ const TradeView = ({ market }: { market: string }) => {
         <div>
             <div 
             ref={chartRef} 
-            className="w-full  h-full min-h-[500px]"  // Add min-h
+            className="w-full  h-full min-h-[500px]"  
             />
         </div>
         

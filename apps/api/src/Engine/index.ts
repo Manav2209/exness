@@ -204,6 +204,7 @@ export class Engine {
 
         }
 
+      
          // 5th Register order in orderMaps 
 
             if(data.side == "buy"){
@@ -363,7 +364,7 @@ export class Engine {
 
             // Market order handles both spot sell and leveraged sell
 
-            if( data.type == market ){
+            if( data.type == "market" ){
                 const order: OPEN_ORDERS = {
                     orderId,
                     type: "market",
@@ -382,7 +383,50 @@ export class Engine {
                             : undefined,
                     } as OPEN_ORDERS;
                 
+                // leverageUsed ===1 ---> SPOT SEll means decuted the asset from the user and put the order in the closed trade 
+                if(leverageUsed === 1){
 
+                    const user = await this.getUserData(data.userId);
+                    const assets = user.assets || {};
+                    const borrowedAssets = user.borrowedAssets || {};
+                    const balanceAfter = { ...user.balance } as Balance;
+
+                    assets[market] = {
+                        side: assets[market]?.side || "long",
+                        qty: (assets[market]?.qty || 0) - qty,
+                        leverage: 1,
+                        entryPrice: assets[market]?.entryPrice || buyPriceScaled,
+                    };
+
+                    const credit = Math.floor(qty * buyPriceScaled);
+                    balanceAfter.usd = (balanceAfter.usd || 0) + credit;
+
+                    await this.updateUserData(data.userId,{
+                        balance: balanceAfter as Balance,
+                        assets,
+                        borrowedAssets,
+                    })
+                
+                const pnlCalculated =  Math.floor((order.openPrice - buyPriceScaled) * order.QTY);
+                // create a CLOSED_ORDERS entry (so listener/UI can show closed orders)
+                    this.CLOSED_ORDERS.set(orderId, {
+                        ...order,
+                        closePrice: buyPriceScaled,
+                        pnl: pnlCalculated, 
+                    } as CLOSED_ORDERS);
+
+                    if(!this.userOrderMap.has(order.userId)){
+                        this.userOrderMap.set(order.userId, new Set());
+                    }
+                    this.userOrderMap.get(order.userId)!.add(order.orderId);
+
+
+                    console.log(`Executed spot sell ${orderId} for ${market} at ${u(buyPriceScaled)}`);
+                    return orderId;
+
+                }
+
+                // For Leverages sell leverageUsed > 1
                 // register order
                 registerOpenOrders(order);
 
@@ -418,48 +462,34 @@ export class Engine {
                     );
                     this.leveragedShortMap
                     .get(market)!
-                    .push({ orderId, price: buyPriceScaled });
+                    .push({ orderId, price: buyPriceScaled 
+
+                });
                 
-                // settle depending on leverage or spot:
-                const assets = user.assets || {};
-                const borrowedAssets: Record<string, any> = user.borrowedAssets || {};
-                const balanceAfter = { ...user.balance } as Balance;
+                        // settle depending on leveraged path: adjust borrowedAssets and locked_usd
+                const userAfter = await this.getUserData(data.userId);
+                const assetsAfter = userAfter.assets || {};
+                const borrowedAfter: Record<string, any> = userAfter.borrowedAssets || {};
+                const balanceAfter2 = { ...userAfter.balance } as Balance;
 
-                if (leverageUsed === 1) {
-                    // SPOT SELL: user must own asset (validated earlier). Deduct asset and credit USD immediately
-                    assets[market] = {
-                        side: assets[market]?.side || "long",
-                        qty: (assets[market]?.qty || 0) - qty,
-                        leverage: 1,
-                        entryPrice: assets[market]?.entryPrice || buyPriceScaled,
-                    };
+                // LEVERAGED SHORT: we recorded margin earlier by LockBalance
+                borrowedAfter[market] = {
+                    side: "short",
+                    qty: (borrowedAfter[market]?.qty || 0) + qty,
+                    leverage: leverageUsed,
+                    entryPrice: buyPriceScaled,
+                };
 
-                    const credit = Math.floor(qty * buyPriceScaled);
-                        balanceAfter.usd = (balanceAfter.usd || 0) + credit;
+                const margin = Math.floor((qty * buyPriceScaled) / leverageUsed);
+                balanceAfter2.locked_usd = (balanceAfter2.locked_usd || 0) - margin;
 
-                    // no locked_usd change for spot sell
-                    } else {
+                await this.updateUserData(data.userId, {
+                    balance: balanceAfter2,
+                    assets: assetsAfter,
+                    borrowedAssets: borrowedAfter,
+                });
 
-                    // LEVERAGED SHORT: we recorded margin earlier by LockBalance
-                    // At execution, user is short: update borrowedAssets and consume margin from locked_usd
-                    borrowedAssets[market] = {
-                        side: "short",
-                        qty: (borrowedAssets[market]?.qty || 0) + qty,
-                        leverage: leverageUsed,
-                        entryPrice: buyPriceScaled,
-                    };
-
-                    const margin = Math.floor((qty * buyPriceScaled) / leverageUsed);
-                        balanceAfter.locked_usd = (balanceAfter.locked_usd || 0) - margin;
-                    }
-                    
-                    await this.updateUserData(data.userId, {
-                        balance: balanceAfter as Balance,
-                        assets,
-                        borrowedAssets,
-                    });
-                    return orderId;
-                }
+                return orderId;
                 }
 
                 throw new Error("Unsupported branch / invalid input");
@@ -467,3 +497,4 @@ export class Engine {
             
         }
     }
+}

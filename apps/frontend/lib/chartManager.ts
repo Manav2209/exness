@@ -49,8 +49,6 @@ import {
           background: { type: ColorType.Solid, color: '#141d22'},
           textColor: layout.color,
         
-          
-          
         },
       });
   
