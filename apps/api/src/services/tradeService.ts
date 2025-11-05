@@ -122,12 +122,16 @@ export const getClosedTrade = async ( req : AuthRequest, res : Response) => {
 
     // fetch closed trades from trade engine
     const ordersIds = await Engine.userOrderMap.get(userId);
+    console.log("OrderId " , ordersIds)
 
     if (ordersIds) {
         const orders = Array.from(ordersIds).map((id) => {
             return Engine.CLOSED_ORDERS.get(id);
         });
+        console.log( "closed Order" , orders)
+        res.status(200).json({orders} as IGetClosedOrdersResponse)
     }
+
     res.status(200).json({ orders: [] } as IGetClosedOrdersResponse);
 
     

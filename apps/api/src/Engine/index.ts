@@ -1,6 +1,7 @@
 import {Heap } from "heap-js";
 import { IOpenOrderRes, IClosedOrderRes } from "../services/tradeService.js";
 import { redis } from "@repo/shared-redis";
+import crypto from "crypto";
 
 
 const SCALE = 100;
@@ -38,14 +39,11 @@ export interface CLOSED_ORDERS extends IClosedOrderRes {
 }
 
 export class Engine {
-
-
-
+    // <orderId , Order> 
     public static OPEN_ORDERS = new Map<string, OPEN_ORDERS>();
     public static CLOSED_ORDERS = new Map<string, CLOSED_ORDERS>();
 
     public static userOrderMap = new Map<string, Set<string>>();
-
 
     public static stopLossLongMap = new Map<string, Heap<HeapNode>>();
     public static stopLossShortMap = new Map<string, Heap<HeapNode>>();
@@ -204,7 +202,6 @@ export class Engine {
 
         }
 
-      
          // 5th Register order in orderMaps 
 
             if(data.side == "buy"){
@@ -229,7 +226,7 @@ export class Engine {
                     // register order
                     registerOpenOrders(order);
 
-                     // push TP/SL
+                    // push TP/SL
                     if (data.SL !== undefined && data.SL > 0) {
                         if (!this.stopLossLongMap.has(market))
                         this.stopLossLongMap.set(
@@ -240,6 +237,7 @@ export class Engine {
                         .get(market)!
                         .push({ orderId, price: p(data.SL) });
                     }
+
                     if (data.TP !== undefined && data.TP > 0) {
                         if (!this.takeProfitLongMap.has(market))
                         this.takeProfitLongMap.set(
@@ -310,6 +308,7 @@ export class Engine {
                         .get(market)!
                         .push({ orderId, price: p(data.SL) });
                     }
+
                     if (data.TP !== undefined && data.TP > 0) {
                         if (!this.takeProfitLongMap.has(market))
                         this.takeProfitLongMap.set(
@@ -365,27 +364,30 @@ export class Engine {
             // Market order handles both spot sell and leveraged sell
 
             if( data.type == "market" ){
-                const order: OPEN_ORDERS = {
-                    orderId,
-                    type: "market",
-                    side: "sell",
-                    QTY: qty,
-                    TP: data.TP !== undefined ? p(data.TP) : undefined,
-                    SL: data.SL !== undefined ? p(data.SL) : undefined,
-                    userId: data.userId,
-                    market: data.market,
-                    createdAt: new Date().toISOString(),
-                    openPrice: buyPriceScaled,
-                    leverage: leverageUsed,
-                    margin:
-                        leverageUsed > 1
-                            ? Math.floor((qty * buyPriceScaled) / leverageUsed)
-                            : undefined,
-                    } as OPEN_ORDERS;
-                
-                // leverageUsed ===1 ---> SPOT SEll means decuted the asset from the user and put the order in the closed trade 
+                // leverageUsed ===1 ---> SPOT SEll means decuted the asset from the user 
                 if(leverageUsed === 1){
+                    // 1 Create an closed Order response
+                    const order: CLOSED_ORDERS = {
+                        orderId,
+                        type: "market",
+                        side: "sell",
+                        QTY: qty,
+                        TP: data.TP !== undefined ? p(data.TP) : undefined,
+                        SL: data.SL !== undefined ? p(data.SL) : undefined,
+                        userId: data.userId,
+                        market: data.market,
+                        createdAt: new Date().toISOString(),
+                        openPrice: 0,
+                        leverage: leverageUsed,
+                        margin:
+                            leverageUsed > 1
+                                ? Math.floor((qty * buyPriceScaled) / leverageUsed)
+                                : undefined,
+                        closePrice: buyPriceScaled,
+                        pnl : 0       
+                        } ;
 
+                    // 2nd  user Data 
                     const user = await this.getUserData(data.userId);
                     const assets = user.assets || {};
                     const borrowedAssets = user.borrowedAssets || {};
@@ -406,26 +408,49 @@ export class Engine {
                         assets,
                         borrowedAssets,
                     })
+
+                    const entryPrice = assets[market]?.entryPrice ;
+                    order.openPrice = entryPrice;
+
                 
-                const pnlCalculated =  Math.floor((order.openPrice - buyPriceScaled) * order.QTY);
-                // create a CLOSED_ORDERS entry (so listener/UI can show closed orders)
-                    this.CLOSED_ORDERS.set(orderId, {
-                        ...order,
-                        closePrice: buyPriceScaled,
-                        pnl: pnlCalculated, 
-                    } as CLOSED_ORDERS);
+                    const pnlCalculated =  Math.floor((buyPriceScaled - entryPrice) * order.QTY);
+                    order.pnl = u(pnlCalculated);
+                    
+                    // create a CLOSED_ORDERS entry (so listener/UI can show closed orders)
+                    this.CLOSED_ORDERS.set(orderId, order);
+                    console.log("closed Orders",this.CLOSED_ORDERS)
 
                     if(!this.userOrderMap.has(order.userId)){
                         this.userOrderMap.set(order.userId, new Set());
                     }
                     this.userOrderMap.get(order.userId)!.add(order.orderId);
+                    console.log( this.userOrderMap.get(order.userId))
 
 
                     console.log(`Executed spot sell ${orderId} for ${market} at ${u(buyPriceScaled)}`);
                     return orderId;
 
                 }
-
+                else {
+                
+                const order: OPEN_ORDERS = {
+                        orderId,
+                        type: "market",
+                        side: "sell",
+                        QTY: qty,
+                        TP: data.TP !== undefined ? p(data.TP) : undefined,
+                        SL: data.SL !== undefined ? p(data.SL) : undefined,
+                        userId: data.userId,
+                        market: data.market,
+                        createdAt: new Date().toISOString(),
+                        openPrice: buyPriceScaled,
+                        leverage: leverageUsed,
+                        margin:
+                            leverageUsed > 1
+                                ? Math.floor((qty * buyPriceScaled) / leverageUsed)
+                                : undefined,
+                        } as OPEN_ORDERS;    
+            
                 // For Leverages sell leverageUsed > 1
                 // register order
                 registerOpenOrders(order);
@@ -466,7 +491,8 @@ export class Engine {
 
                 });
                 
-                        // settle depending on leveraged path: adjust borrowedAssets and locked_usd
+                // settle depending on leveraged path: adjust borrowedAssets and locked_usd
+
                 const userAfter = await this.getUserData(data.userId);
                 const assetsAfter = userAfter.assets || {};
                 const borrowedAfter: Record<string, any> = userAfter.borrowedAssets || {};
@@ -491,6 +517,7 @@ export class Engine {
 
                 return orderId;
                 }
+            }
 
                 throw new Error("Unsupported branch / invalid input");
 
