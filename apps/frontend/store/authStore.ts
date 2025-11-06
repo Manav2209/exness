@@ -24,7 +24,7 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set, get) => ({
     user: null,
     token: typeof window !== "undefined" ? localStorage.getItem("token") : null,
-    loading: false,
+    loading: false ,
     error: null,
 
     signup: async (values) => {

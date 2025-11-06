@@ -2,14 +2,16 @@
 import { useState } from "react";
 import { Plus, Minus, TrendingUp, TrendingDown } from "lucide-react";
 import { TradingInstrument } from "@/lib/types";
+import { useAuthStore } from "@/store/authStore";
+import { useRouter } from "next/navigation";
 
 interface OrderFormProps {
   selectedInstrument: TradingInstrument | null;
 }
 
 const OrderForm = ({ selectedInstrument }: OrderFormProps) => {
-
-
+  const { token, logout } = useAuthStore(); 
+  const router = useRouter();
   const [orderType, setOrderType] = useState<"buy" | "sell">("buy");
   const [volume, setVolume] = useState("0.01");
   const [takeProfit, setTakeProfit] = useState("");
@@ -37,6 +39,11 @@ const OrderForm = ({ selectedInstrument }: OrderFormProps) => {
 
   const handlePlaceOrder = async () => {
     if (!selectedInstrument) return;
+    if (!token) {
+      logout();
+      router.push("/signin");
+      return;
+    }    
     const data = {
       type: "market",
       side: orderType,
@@ -65,6 +72,10 @@ const OrderForm = ({ selectedInstrument }: OrderFormProps) => {
         setTakeProfit("");
         setStopLoss("");
        // await fetchBalance();
+      } else if (res.status === 401) {
+        // Unauthorized: token might be invalid or expired
+        logout();
+        router.push("/signin");
       } else {
         console.error("❌ Failed to place order");
       }

@@ -1,10 +1,11 @@
 import { TradingInstrument } from '@/lib/types';
+import { useAuthStore } from '@/store/authStore';
 import React, { useEffect, useState } from 'react'
 
 export const Orders = ({selectedInstrument}: {
     selectedInstrument: TradingInstrument
 }) => {
-
+    const { token} = useAuthStore();
     const [openOrders, setOpenOrders] = useState<any[]>([]);
     const [closedOrders, setClosedOrders] = useState<any[]>([]);
     const [activeTab, setActiveTab] = useState<'open' | 'pending' | 'closed'>('open');
@@ -14,6 +15,8 @@ export const Orders = ({selectedInstrument}: {
 
 
     useEffect(() => {
+        if (!token || !selectedInstrument) return;
+
         const fetchOpenOrders = async () => {
             try {
                 const res = await fetch("http://localhost:4000/api/v1/trade/open", {

@@ -9,37 +9,33 @@ import { useEffect, useState } from "react";
 import TradeView from "@/components/webtrading/tradeView";
 import { Orders } from "@/components/webtrading/Orders";
 import { Header } from "@/components/webtrading/Header";
-
+import { useAuthStore } from "@/store/authStore"; 
 
 const Webtrading = () => {
-
+    const token = useAuthStore((state) => state.token);
     const [selectedInstrument, setSelectedInstrument] = useState<TradingInstrument | null>(null);
-    const [assets, setAssets] = useState<TradingInstrument[]>([]);
+    const [assets, setAssets] = useState<TradingInstrument[]>([]);;
+
+
     useEffect(() => {
-
-        fetchAssets();
+        if (token === null) {
+            return;
+        }
+    
+        fetchAssets(token);
         const wsInstance = WsManager.getInstance();
-            wsInstance.sendMessage({
+        const decoded = jwtDecode(token);
+        const userId = (decoded as any)?.userId || "guest"
+
+        wsInstance.sendMessage({
                 type: "IDENTIFY",
-                userId: "abcd"
+                userId: userId
             })
-        },[])
+        },[token])
 
-    async function fetchAssets() {
+    async function fetchAssets(token: string) {
             try {
-            const token = localStorage.getItem("token");
-            if (!token) {
-                console.error("No token found in localStorage");
-                return;
-            }
-
-            const decoded = jwtDecode(token);
-            const userId = (decoded as any)?.userId;
-            if (!userId) {
-                console.error("Invalid token: no userId found");
-                return;
-            }
-
+        
             const res = await axios.get("http://localhost:4000/api/v1/asset", {
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -70,14 +66,11 @@ const Webtrading = () => {
         
         <div className="p-4 bg-[#141d22] border-b-4 border-neutral-500">
             <Header 
-         
             assets={assets} />
         </div>
 
         {/* Main Layout */}
         <div className="flex flex-row bg-[#141920] ">
-        
-        
             <Sidebar
             // @ts-ignore
             selectedInstrument={selectedInstrument}

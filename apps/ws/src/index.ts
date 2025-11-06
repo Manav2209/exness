@@ -18,13 +18,10 @@ wss.on('connection', (ws: WebSocket) => {
 
             const message = JSON.parse(msg.toString());
             if (message.type === WS_MSG_TYPE.IDENTIFY) {
-
                 UserManager.getInstance().addUser(message.userId, ws);
             }
             else if (message.type === WS_MSG_TYPE.SUBSCRIBE || message.type === WS_MSG_TYPE.UNSUBSCRIBE) {
-
                 SubscriptionManager.getInstance().handleSubscription(message, ws);
-
             }
 
         }

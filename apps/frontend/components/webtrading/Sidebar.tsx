@@ -6,6 +6,8 @@ import { Input } from "../ui/input";
 import { WsManager } from "@/lib/WsManager";
 import axios from "axios";
 import Image from "next/image";
+import { useAuthStore } from "@/store/authStore";
+import { useRouter } from "next/navigation";
 
 export interface WsTradeData{
     data: {
@@ -26,6 +28,9 @@ interface SidebarProps {
 
 export const Sidebar = ({ selectedInstrument, onSelectInstrument, assets: fetchAssets }: SidebarProps) => {
 
+    const {token , logout} = useAuthStore();
+    const router = useRouter();
+
     const [searchTerm, setSearchTerm] = useState('');
     // const [activeTab, setActiveTab] = useState('all');
     const [assets, setAssets] = useState<TradingInstrument[]>(fetchAssets);
@@ -37,6 +42,12 @@ export const Sidebar = ({ selectedInstrument, onSelectInstrument, assets: fetchA
   
 
     useEffect(() => {
+
+      if (!token) {
+        logout();
+        router.push("/signin");
+        return;
+      }
         async function fetchAndSubscribe() {
           try {
             const token = localStorage.getItem("token");
@@ -74,8 +85,12 @@ export const Sidebar = ({ selectedInstrument, onSelectInstrument, assets: fetchA
               }
             }, 'all-trades');
     
-          } catch (error) {
+          } catch (error : any) {
             console.error('Error fetching assets:', error);
+            if (error.response?.status === 401) {
+              logout();
+              router.push("/signin");
+            }
           }
         }
     
@@ -85,7 +100,7 @@ export const Sidebar = ({ selectedInstrument, onSelectInstrument, assets: fetchA
           const wsInstance = WsManager.getInstance();
           wsInstance.deRegisterCallback('trade', 'all-trades');
         };
-      }, [onSelectInstrument]);
+      }, [onSelectInstrument , token , logout , router]);
 
     return (
     <div className="w-[20%] h-screen bg-[#141d22] text-gray-200 border-r border-gray-700 flex flex-col">

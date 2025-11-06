@@ -6,6 +6,7 @@ import { TradingInstrument } from "@/lib/types";
 import { PlusCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import { useAuthStore } from "@/store/authStore";
 
 interface HeaderProps {
   assets: TradingInstrument[];
@@ -13,12 +14,17 @@ interface HeaderProps {
 
 export const Header = ({ assets }: HeaderProps) => {
   const router = useRouter();
+
+  const { token, logout } = useAuthStore();
+
+  
   const [balance, setBalance] = useState<number | null>(null);
   const [lockedBalance, setLockedBalance] = useState<number | null>(null);
   const [showBalancePopup, setShowBalancePopup] = useState(false);
 
   // Fetch balance on mount
   useEffect(() => {
+    if (!token) return;
     const fetchBalance = async () => {
       try {
         const res = await axios.get("http://localhost:4000/api/v1/balance", {
@@ -33,13 +39,12 @@ export const Header = ({ assets }: HeaderProps) => {
       }
     };
     fetchBalance();
-  }, []);
+  }, [token]);
 
   // Logout handler
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    document.cookie = "token=; Max-Age=0; path=/;";
-    router.push("/signin");
+    logout();
+    router.push("/signin")
   };
 
   return (

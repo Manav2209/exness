@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import  { prismaClient } from "@repo/db/client";
 import { redis } from "@repo/shared-redis";
 import dotenv from "dotenv";
+import { AuthRequest } from "../middleware.js";
 dotenv.config();
 
 
@@ -95,3 +96,29 @@ export const signup = async (req : Request, res : Response) => {
   
     res.status(201).json({ userId: user.id, token: token });
   };
+
+export const getUser = async (req: AuthRequest , res : Response) => {
+
+  const userId  = req.userId;
+
+  if(!userId){
+    return res
+    .status(401)
+    .json({ message: "Unauthorized", error: "User ID not found in token" });
+}
+  const user = await prismaClient.user.findFirst({
+    where:{
+      id : userId
+    }
+  })
+
+  if(!user){
+    return res.status(400).json("User not found in db")
+  }
+
+  res.status(201).json({
+    userId : user.id,
+    username : user.username
+  })
+
+}
