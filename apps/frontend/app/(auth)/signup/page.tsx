@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useAuthStore } from "@/store/authStore";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   username: z.string().min(6, "Username must be at least 6 characters long"),
@@ -26,7 +28,8 @@ const formSchema = z.object({
 type FormSchema = z.infer<typeof formSchema>;
 
 const SignUpPage = () => {
-  const [loading, setLoading] = useState(false);
+  const { signup, loading } = useAuthStore();
+  const router = useRouter();
 
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
@@ -39,16 +42,11 @@ const SignUpPage = () => {
 
   const onSubmit = async (values: FormSchema) => {
     try {
-      setLoading(true);
-      const res = await axios.post("http://localhost:4000/api/v1/auth/signup", values);
-      const token = res.data.token;
-      localStorage.setItem("token", token);
+      await signup(values);
       toast.success("Signup successful!");
-      form.reset();
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Something went wrong!");
-    } finally {
-      setLoading(false);
+      router.push("/webtrading");
+    } catch (err: any) {
+      toast.error("Signup failed!");
     }
   };
 
