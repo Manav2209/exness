@@ -23,6 +23,7 @@ export class SubscriptionManager {
     private  constructor() {}
 
     public handleSubscription (data : SubscriptionData , ws : WsWebSocket) {
+        
         let user = UserManager.getInstance().getUserFromWs(ws);
 
         if (!user) {
@@ -52,6 +53,7 @@ export class SubscriptionManager {
                                 market: data.market,
                             });
                         });
+        
 
                 });
 

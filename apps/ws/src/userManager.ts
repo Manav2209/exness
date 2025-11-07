@@ -6,7 +6,6 @@ export class UserManager{
     private static instance: UserManager;
     // <userId ,  <User> >
     private users: Map<string, User > = new Map();
-
     //< WsWebSocket , userId >
 
     private wsToUserId: Map<WsWebSocket, string> = new Map();
@@ -24,6 +23,7 @@ export class UserManager{
         const user = new User(userId, ws);
         this.users.set(userId, user);
         this.wsToUserId.set(ws, userId);
+        console.log("added user")
     }
 
     public getUserFromWs(ws: WsWebSocket) {

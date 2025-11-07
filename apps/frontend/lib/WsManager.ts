@@ -51,7 +51,7 @@ export class WsManager {
             this.ws.send(JSON.stringify(msgToSend));
         }
     
-      // ✅ safe subscribe
+
         subscribe(market: string, userId: string) {
             if (this.subscribedMarkets.has(market)) {
                 return;
@@ -63,6 +63,20 @@ export class WsManager {
                 market,
                 userId,
             });
+    }
+
+    unsubscribe(market: string) {
+        if (!this.subscribedMarkets.has(market)) {
+            console.log(`Not subscribed to ${market}`);
+            return;
+        }
+
+        this.subscribedMarkets.delete(market);
+        this.sendMessage({
+            type: "UNSUBSCRIBE",
+            market,
+        });
+        console.log("Unsubscribed from:", market);
     }
     
         registerCallback(type: string, callback: any, id: string) {

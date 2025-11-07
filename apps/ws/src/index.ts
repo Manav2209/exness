@@ -15,7 +15,6 @@ wss.on('connection', (ws: WebSocket) => {
         console.log(`Received message => ${msg}`);
         try{
             console.log("Received message:", msg.toString());
-
             const message = JSON.parse(msg.toString());
             if (message.type === WS_MSG_TYPE.IDENTIFY) {
                 UserManager.getInstance().addUser(message.userId, ws);
@@ -23,7 +22,6 @@ wss.on('connection', (ws: WebSocket) => {
             else if (message.type === WS_MSG_TYPE.SUBSCRIBE || message.type === WS_MSG_TYPE.UNSUBSCRIBE) {
                 SubscriptionManager.getInstance().handleSubscription(message, ws);
             }
-
         }
         catch(err){
             console.error('Error processing message:', err);

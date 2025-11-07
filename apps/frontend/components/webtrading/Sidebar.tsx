@@ -8,6 +8,7 @@ import axios from "axios";
 import Image from "next/image";
 import { useAuthStore } from "@/store/authStore";
 import { useRouter } from "next/navigation";
+import { jwtDecode } from "jwt-decode";
 
 export interface WsTradeData{
     data: {
@@ -35,6 +36,7 @@ export const Sidebar = ({ selectedInstrument, onSelectInstrument, assets: fetchA
     // const [activeTab, setActiveTab] = useState('all');
     const [assets, setAssets] = useState<TradingInstrument[]>(fetchAssets);
     const selectedInstrumentRef = useRef(selectedInstrument);
+    const subscribedMarketsRef = useRef<string[]>([]);
   
     useEffect(() => {
       selectedInstrumentRef.current = selectedInstrument;
@@ -48,6 +50,9 @@ export const Sidebar = ({ selectedInstrument, onSelectInstrument, assets: fetchA
         router.push("/signin");
         return;
       }
+      const decoded = jwtDecode(token);
+      const userId = (decoded as any)?.userId || "guest"
+      
         async function fetchAndSubscribe() {
           try {
             const token = localStorage.getItem("token");
@@ -84,6 +89,13 @@ export const Sidebar = ({ selectedInstrument, onSelectInstrument, assets: fetchA
                 });
               }
             }, 'all-trades');
+
+            initialAssets.forEach((asset) => {
+              wsInstance.subscribe(asset.symbol.toLocaleLowerCase(),userId);
+              subscribedMarketsRef.current.push(asset.symbol);
+
+              console.log("Subscribed to:", asset.symbol);
+          });
     
           } catch (error : any) {
             console.error('Error fetching assets:', error);
@@ -99,6 +111,15 @@ export const Sidebar = ({ selectedInstrument, onSelectInstrument, assets: fetchA
         return () => {
           const wsInstance = WsManager.getInstance();
           wsInstance.deRegisterCallback('trade', 'all-trades');
+
+          subscribedMarketsRef.current.forEach((market) => {
+            wsInstance.unsubscribe(market.toLocaleLowerCase());
+            console.log("Unsubscribed from:", market);
+        });
+
+        subscribedMarketsRef.current = [];
+
+          
         };
       }, [onSelectInstrument , token , logout , router]);
 
