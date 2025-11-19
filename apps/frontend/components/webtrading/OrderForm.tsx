@@ -4,6 +4,8 @@ import { Plus, Minus, TrendingUp, TrendingDown } from "lucide-react";
 import { TradingInstrument } from "@/lib/types";
 import { useAuthStore } from "@/store/authStore";
 import { useRouter } from "next/navigation";
+import { useTradeStore } from "@/store/tradeStore";
+import { toast } from "sonner";
 
 interface OrderFormProps {
   selectedInstrument: TradingInstrument | null;
@@ -17,6 +19,8 @@ const OrderForm = ({ selectedInstrument }: OrderFormProps) => {
   const [takeProfit, setTakeProfit] = useState("");
   const [stopLoss, setStopLoss] = useState("");
   const [leverage, setLeverage] = useState(1);
+
+  const triggerOrderUpdate = useTradeStore((state) => state.triggerOrderUpdate);
 
   const formatPrice = (price: number) => price.toFixed(3);
 
@@ -67,17 +71,20 @@ const OrderForm = ({ selectedInstrument }: OrderFormProps) => {
       });
 
       if (res.ok) {
-        console.log("✅ Order placed");
+        toast.success("Order placed successfully");
+        triggerOrderUpdate();
+        console.log("Order placed");
         setVolume("0.01");
         setTakeProfit("");
         setStopLoss("");
        // await fetchBalance();
       } else if (res.status === 401) {
         // Unauthorized: token might be invalid or expired
+        toast.error("Session expired. Please sign in again.");
         logout();
         router.push("/signin");
       } else {
-        console.error("❌ Failed to place order");
+        console.error("Failed to place order");
       }
     } catch (err) {
       console.error("Error placing order:", err);

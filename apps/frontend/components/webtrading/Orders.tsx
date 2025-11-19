@@ -1,5 +1,6 @@
 import { TradingInstrument } from '@/lib/types';
 import { useAuthStore } from '@/store/authStore';
+import { useTradeStore } from '@/store/tradeStore';
 import React, { useEffect, useState } from 'react'
 
 export const Orders = ({selectedInstrument}: {
@@ -9,6 +10,7 @@ export const Orders = ({selectedInstrument}: {
     const [openOrders, setOpenOrders] = useState<any[]>([]);
     const [closedOrders, setClosedOrders] = useState<any[]>([]);
     const [activeTab, setActiveTab] = useState<'open' | 'pending' | 'closed'>('open');
+    const orderUpdateCounter = useTradeStore((state) => state.orderUpdateCount);
 
     const formatPrice = (price: number) => price.toFixed(3);
 
@@ -36,7 +38,7 @@ export const Orders = ({selectedInstrument}: {
         
             const fetchClosedOrders = async () => {
             try {
-                const res = await fetch("http://localhost:3000/api/v1/trade/close", {
+                const res = await fetch("http://localhost:4000/api/v1/trade/close", {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
@@ -55,7 +57,7 @@ export const Orders = ({selectedInstrument}: {
         
             fetchOpenOrders();
             fetchClosedOrders();
-        },[])
+        },[ orderUpdateCounter]);
   return (
     <div className="flex-1 flex flex-col bg-[#141920] ">
         <div className="flex items-center justify-between p-4 border-b border-[#2a3441]">

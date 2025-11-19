@@ -59,7 +59,7 @@ async function main() {
 }
 main()
     .catch((error) => {
-    console.error("❌ Error seeding data:", error);
+    console.error("Error seeding data:", error);
     throw error;
 })
     .finally(async () => {

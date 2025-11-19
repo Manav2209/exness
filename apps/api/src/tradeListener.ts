@@ -94,7 +94,7 @@ async function liquidateOrder(
   // can send notification to user here if needed
   
   console.log(
-    `✅ Order ${order.orderId} for ${order.market} (${order.side}) closed at ${u(closePrice)}, PnL: ${u(pnlScaled)}`
+    ` Order ${order.orderId} for ${order.market} (${order.side}) closed at ${u(closePrice)}, PnL: ${u(pnlScaled)}`
   );
 }
 
