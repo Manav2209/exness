@@ -163,7 +163,7 @@ export const Sidebar = ({ selectedInstrument, onSelectInstrument, assets: fetchA
           onClick={() => onSelectInstrument(asset)}
           className={`cursor-pointer hover:bg-[#1a1f26] transition-colors ${
             selectedInstrument?.symbol === asset.symbol
-              ? 'bg-[#1a1f26] border-l-2 border-l-[#ff6b00]'
+              ? 'bg-[#1a1f26] border-l-2 border-l-yellow-400'
               : ''
           }`}
         >

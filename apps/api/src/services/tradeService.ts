@@ -109,30 +109,33 @@ export const getOpenTrade = async ( req : AuthRequest, res : Response) => {
 
     
 }
-
-export const getClosedTrade = async ( req : AuthRequest, res : Response) => {
-
+export const getClosedTrade = async (req: AuthRequest, res: Response) => {
     const userId = req.userId;
-
+  
     if (!userId) {
-        return res
+      return res
         .status(401)
         .json({ message: "Unauthorized", error: "User ID not found in token" });
     }
-
+  
     // fetch closed trades from trade engine
-    const ordersIds = await Engine.userOrderMap.get(userId);
-    console.log("OrderId " , ordersIds)
-
-    if (ordersIds) {
-        const orders = Array.from(ordersIds).map((id) => {
-            return Engine.CLOSED_ORDERS.get(id);
-        });
-        console.log( "closed Order" , orders)
-        res.status(200).json({orders} as IGetClosedOrdersResponse)
+    const ordersIds = Engine.userOrderMap.get(userId);
+    console.log("OrderId", ordersIds);
+  
+    if (ordersIds && ordersIds.size > 0) {
+      const orders = Array.from(ordersIds).map((id) =>
+        Engine.CLOSED_ORDERS.get(id)
+      );
+  
+      console.log("closed Order", orders);
+  
+      return res.status(200).json({
+        orders,
+      } as IGetClosedOrdersResponse);
     }
-
-    res.status(200).json({ orders: [] } as IGetClosedOrdersResponse);
-
-    
-}
+  
+    // default fallback
+    return res.status(200).json({
+      orders: [],
+    } as IGetClosedOrdersResponse);
+  };

@@ -93,7 +93,7 @@ const TradeView = ({ market }: { market: string }) => {
         <div>
             <div 
             ref={chartRef} 
-            className="w-full  h-full min-h-[500px]"  
+            className="w-full h-full min-h-[300px] sm:min-h-[350px] md:min-h-[400px] lg:min-h-[500px] "  
             />
         </div>
         

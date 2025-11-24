@@ -9,18 +9,23 @@ import axios from "axios";
 import { useAuthStore } from "@/store/authStore";
 
 interface HeaderProps {
+  selectedInstrument: TradingInstrument | null;
+  onSelectInstrument: (instrument: TradingInstrument) => void;
   assets: TradingInstrument[];
 }
 
-export const Header = ({ assets }: HeaderProps) => {
+export const Header = ({  selectedInstrument , onSelectInstrument ,assets }: HeaderProps) => {
+
   const router = useRouter();
-
   const { token, logout } = useAuthStore();
-
-  
   const [balance, setBalance] = useState<number | null>(null);
   const [lockedBalance, setLockedBalance] = useState<number | null>(null);
   const [showBalancePopup, setShowBalancePopup] = useState(false);
+  const selectedInstrumentRef = React.useRef(selectedInstrument);
+
+  useEffect(() => {
+    selectedInstrumentRef.current = selectedInstrument;
+  }, [selectedInstrument]);
 
   // Fetch balance on mount
   useEffect(() => {
@@ -47,6 +52,10 @@ export const Header = ({ assets }: HeaderProps) => {
     router.push("/signin")
   };
 
+  const handleAssetClick = (asset: TradingInstrument) => {
+    onSelectInstrument(asset);
+  };
+
   return (
     <div className="bg-[#141d22] w-full flex justify-between items-center text-neutral-400 px-4 py-2 relative">
       {/* Left: Logo */}
@@ -64,9 +73,14 @@ export const Header = ({ assets }: HeaderProps) => {
       <div className="flex space-x-16 justify-start items-center">
         {assets?.map((asset) => (
           <div
+            onClick={() => handleAssetClick(asset)}
             key={asset.symbol}
-            className="flex flex-col items-center cursor-pointer hover:opacity-100 transition"
-          >
+            className={`flex flex-col items-center cursor-pointer transition relative ${
+              selectedInstrument?.symbol === asset.symbol
+                ? "opacity-100"
+                : "hover:opacity-100 opacity-60"
+            }`}         
+            >
             <Image
               src={asset.img_url}
               alt={asset.symbol}
@@ -74,6 +88,9 @@ export const Header = ({ assets }: HeaderProps) => {
               height={40}
               className="rounded-full object-cover"
             />
+            {selectedInstrument?.symbol === asset.symbol && (
+              <div className="absolute -bottom-2 w-6 h-1 bg-yellow-400 rounded-full"></div>
+            )}
           </div>
         ))}
       </div>

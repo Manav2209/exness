@@ -35,20 +35,12 @@ import {
       initialData: InitialCandleData[],
       layout: { background: string; color: string }
     ) {
+
       const chart = createChart(ref, {
-        width: ref.clientWidth || 800,
-        height: ref.clientHeight || 500,
-        timeScale: {
-          timeVisible: true,
-          secondsVisible: false,
-        },
-        crosshair: {
-          mode: 1, // CrosshairMode.Normal
-        },
+        autoSize: true,
         layout: {
-          background: { type: ColorType.Solid, color: '#141d22'},
+          background: { type: ColorType.Solid, color: layout.background },
           textColor: layout.color,
-        
         },
       });
   

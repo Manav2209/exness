@@ -16,7 +16,6 @@ const Webtrading = () => {
     const [selectedInstrument, setSelectedInstrument] = useState<TradingInstrument | null>(null);
     const [assets, setAssets] = useState<TradingInstrument[]>([]);;
 
-
     useEffect(() => {
         if (token === null) {
             return;
@@ -31,7 +30,7 @@ const Webtrading = () => {
                 type: "IDENTIFY",
                 userId: userId
             })
-        },[token])
+        },[token]) 
 
     async function fetchAssets(token: string) {
             try {
@@ -66,6 +65,9 @@ const Webtrading = () => {
         
         <div className="p-4 bg-[#141d22] border-b-4 border-neutral-500">
             <Header 
+            //@ts-ignore
+            selectedInstrument={selectedInstrument}
+            onSelectInstrument={setSelectedInstrument}
             assets={assets} />
         </div>
 
@@ -84,7 +86,6 @@ const Webtrading = () => {
                 <Orders
                 //@ts-ignore
                 selectedInstrument={selectedInstrument}
-                
                 />
             </div>
 
